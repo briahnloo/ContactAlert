@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct AutocallApp: App {
+    @StateObject private var viewModel = ContactsViewModel()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(viewModel)
         }
     }
 }
