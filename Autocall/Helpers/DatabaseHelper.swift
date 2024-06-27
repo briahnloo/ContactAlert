@@ -1,87 +1,67 @@
 //
-//  DatabaseHelper.swift
+//  Parser.swift
 //  Autocall
 //
 //  Created by Brian Liu on 6/23/24.
 //
 
 import Foundation
-import SQLite
+import CoreXLSX
 
-class DatabaseHelper {
-    static let shared = DatabaseHelper()
-    private var db: Connection?
-
-    private init() {
-        do {
-            let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
-            db = try Connection("\(path)/db.sqlite3")
-            createTable()
-        } catch {
-            print("Unable to open database: \(error.localizedDescription)")
-        }
-    }
-
-    private func createTable() {
-        let contacts = Table("contacts")
-        let id = Expression<Int64>("id")
-        let phoneNumber = Expression<String>("phoneNumber")
-        let name = Expression<String>("name")
-        let company = Expression<String>("company")
-        let notes = Expression<String>("notes")
+struct CSVParser {
+    static func parse(csvString: String) -> [Contact] {
+        var contacts: [Contact] = []
+        let rows = csvString.components(separatedBy: "\n")
         
-        do {
-            try db?.run(contacts.create { t in
-                t.column(id, primaryKey: .autoincrement)
-                t.column(phoneNumber, unique: true)
-                t.column(name)
-                t.column(company)
-                t.column(notes)
-            })
-        } catch {
-            print("Unable to create table: \(error.localizedDescription)")
-        }
-    }
-
-    func insertContact(contact: Contact) {
-        let contacts = Table("contacts")
-        let phoneNumber = Expression<String>("phoneNumber")
-        let name = Expression<String>("name")
-        let company = Expression<String>("company")
-        let notes = Expression<String>("notes")
-
-        let insert = contacts.insert(phoneNumber <- contact.phoneNumber, name <- contact.name, company <- contact.company, notes <- contact.notes)
-        
-        do {
-            try db?.run(insert)
-        } catch {
-            print("Unable to insert contact: \(error.localizedDescription)")
-        }
-    }
-
-    func getAllContacts() -> [Contact] {
-        let contacts = Table("contacts")
-        let phoneNumber = Expression<String>("phoneNumber")
-        let name = Expression<String>("name")
-        let company = Expression<String>("company")
-        let notes = Expression<String>("notes")
-
-        var contactList = [Contact]()
-
-        do {
-            for contact in try db!.prepare(contacts) {
+        for row in rows {
+            let columns = row.components(separatedBy: ",")
+            if columns.count >= 3 {
                 let contact = Contact(
-                    phoneNumber: contact[phoneNumber],
-                    name: contact[name],
-                    company: contact[company],
-                    notes: contact[notes]
+                    phoneNumber: columns[1].trimmingCharacters(in: .whitespaces),
+                    name: columns[0].trimmingCharacters(in: .whitespaces),
+                    company: columns[2].trimmingCharacters(in: .whitespaces),
+                    notes: columns.count > 3 ? columns[3].trimmingCharacters(in: .whitespaces) : ""
                 )
-                contactList.append(contact)
+                contacts.append(contact)
             }
-        } catch {
-            print("Unable to fetch contacts: \(error.localizedDescription)")
         }
-
-        return contactList
+        return contacts
+    }
+    
+    static func parseExcel(at url: URL) -> [Contact]? {
+        guard let file = XLSXFile(filepath: url.path) else { return nil }
+        
+        do {
+            guard let sharedStrings = try file.parseSharedStrings() else { return nil }
+            var contacts: [Contact] = []
+            
+            for path in try file.parseWorksheetPaths() {
+                let worksheet = try file.parseWorksheet(at: path)
+                for row in worksheet.data?.rows ?? [] {
+                    let columns = row.cells.map { cell -> String in
+                        if let stringValue = cell.stringValue(sharedStrings) {
+                            return stringValue
+                        } else if let value = cell.value {
+                            return value
+                        } else {
+                            return ""
+                        }
+                    }
+                    if columns.count >= 3 {
+                        let contact = Contact(
+                            phoneNumber: columns[1],
+                            name: columns[0],
+                            company: columns[2],
+                            notes: columns.count > 3 ? columns[3] : ""
+                        )
+                        contacts.append(contact)
+                    }
+                }
+            }
+            return contacts
+        } catch {
+            print("Error parsing Excel file: \(error.localizedDescription)")
+            return nil
+        }
     }
 }

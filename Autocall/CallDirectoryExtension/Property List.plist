@@ -14,7 +14,7 @@
 	</dict>
 	<key>NSFileProviderUsageDescription</key>
 	<string>This app needs access to your files to upload information</string>
-	<key>NSDocumentsFOlderUsageDescription</key>
+	<key>NSDocumentsFolderUsageDescription</key>
 	<string>This app needs your documents for information</string>
 	<key>CFBundleDisplayName</key>
 	<string>$(PRODUCT_NAME)</string>

@@ -13,25 +13,26 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             List(viewModel.contacts) { contact in
-                VStack(alignment: .leading) {
-                    Text(contact.name)
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("• Name: \(contact.name)")
                         .font(.headline)
-                    Text(contact.phoneNumber)
+                    Text("• Phone Number: \(contact.phoneNumber)")
                         .font(.subheadline)
                     if !contact.company.isEmpty {
-                        Text("Company: \(contact.company)")
+                        Text("• Company: \(contact.company)")
                             .font(.subheadline)
                     }
                     if !contact.notes.isEmpty {
-                        Text("Notes: \(contact.notes)")
+                        Text("• Notes: \(contact.notes)")
                             .font(.subheadline)
                     }
                 }
-                .padding()
+                .padding(.vertical, 10)
             }
             .navigationBarTitle("Contacts")
             .onAppear {
-                viewModel.reloadCallDirectoryExtension()
+                // Optionally reload Call Directory Extension if needed
+                // viewModel.reloadCallDirectoryExtension()
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -43,14 +44,14 @@ struct ContentView: View {
                 }
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: {
-                        viewModel.handleIncomingCall(with: "1234567890") // Replace with a test number
+                        viewModel.handleIncomingCall(with: "4159964437") // my own number?
                     }) {
                         Text("Test Call")
                     }
                 }
             }
             .alert(isPresented: $viewModel.showAlert) {
-                Alert(title: Text("Error"), message: Text(viewModel.alertMessage), dismissButton: .default(Text("OK")))
+                Alert(title: Text("SALES CALL"), message: Text(viewModel.alertMessage), dismissButton: .default(Text("OK")))
             }
         }
     }

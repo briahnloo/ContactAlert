@@ -2,14 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>This App needs access to your folders to upload information</string>
 	<key>NSExtensionAttributes</key>
 	<string>CXCallDirectoryExtensionIdentifier</string>
 	<key>NSExtension</key>
 	<string>NSExtensionPointIdentifier</string>
 	<key>NSFileProviderUsageDescription</key>
 	<string>This app needs access to your files to upload information</string>
-	<key>NSDocumentsFolderUsageDescription</key>
-	<string>This app needs to acces your documents to upload information</string>
 	<key>NSAppTransportSecurity</key>
 	<dict/>
 	<key>CFBundleDisplayName</key>
